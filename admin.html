@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2GO! - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> tailwind.config = { darkMode: 'class' } </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex h-screen overflow-hidden transition-colors duration-200">
+
+    <aside class="w-64 bg-white dark:bg-gray-800 shadow-xl hidden md:flex flex-col z-10 transition-colors">
+        <div class="p-6 border-b dark:border-gray-700">
+            <h1 class="text-2xl font-bold text-orange-600 dark:text-orange-500"><i class="fas fa-user-shield"></i> 2GO! Admin</h1>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="switchView('orders')" id="nav-orders" class="w-full text-left block px-4 py-3 bg-orange-50 dark:bg-gray-700 text-orange-600 dark:text-orange-400 rounded-xl font-bold transition-colors">
+                <i class="fas fa-clock mr-2"></i> Live Orders
+            </button>
+            <button onclick="switchView('menu')" id="nav-menu" class="w-full text-left block px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                <i class="fas fa-utensils mr-2"></i> Manage Menu
+            </button>
+            <button onclick="switchView('report')" id="nav-report" class="w-full text-left block px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                <i class="fas fa-chart-line mr-2"></i> Sales Report
+            </button>
+            <button onclick="toggleTheme()" class="w-full text-left block px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                <span class="dark:hidden"><i class="fas fa-moon mr-2"></i> Dark Mode</span>
+                <span class="hidden dark:inline"><i class="fas fa-sun mr-2 text-yellow-400"></i> Light Mode</span>
+            </button>
+            <a href="index.html" class="block px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="md:hidden flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Admin Panel</h1>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleTheme()" class="p-2 text-gray-600 dark:text-gray-300"><i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:inline text-yellow-400"></i></button>
+                    <a href="index.html" class="text-red-500"><i class="fas fa-sign-out-alt"></i></a>
+                </div>
+            </div>
+
+            <div id="ordersView">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm mb-8 border border-gray-200 dark:border-gray-700 transition-colors">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Add New Menu Item (Demo)</h2>
+                    <form onsubmit="event.preventDefault(); alert('Item added! (Demo)');" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Stall</label>
+                            <select class="w-full p-2 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white">
+                                <option>Aunty Lim Delight</option>
+                                <option>Campus Burger</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Item Name</label><input type="text" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white" placeholder="e.g. Nasi Lemak"></div>
+                        <div class="md:col-span-1"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Price (RM)</label><input type="number" step="0.10" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white" placeholder="0.00"></div>
+                        <div class="md:col-span-1"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Emoji</label><input type="text" value="🥘" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white"></div>
+                        <div class="md:col-span-1 flex items-end"><button type="submit" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition-colors">Add Item</button></div>
+                    </form>
+                </div>
+
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Incoming Orders</h2>
+                    <div id="liveIndicator" class="flex items-center gap-2 text-green-500 text-sm font-bold animate-pulse"><span class="w-2 h-2 bg-green-500 rounded-full"></span> LIVE</div>
+                </div>
+                <div id="ordersContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+            </div>
+
+            <div id="menuView" class="hidden">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Manage Menu Availability</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+                                <tr><th class="px-6 py-4 font-bold text-gray-500 dark:text-gray-400 uppercase text-xs">Item</th><th class="px-6 py-4 font-bold text-gray-500 dark:text-gray-400 uppercase text-xs">Stall</th><th class="px-6 py-4 font-bold text-gray-500 dark:text-gray-400 uppercase text-xs">Price</th><th class="px-6 py-4 font-bold text-gray-500 dark:text-gray-400 uppercase text-xs text-right">Status</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                    <td class="px-6 py-4"><div class="flex items-center gap-3"><span class="text-2xl">🥘</span><div><p class="font-bold text-gray-800 dark:text-white">Nasi Lemak</p></div></div></td>
+                                    <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Aunty Lim Delight</td>
+                                    <td class="px-6 py-4 font-bold text-gray-800 dark:text-white">RM 10.00</td>
+                                    <td class="px-6 py-4 text-right"><button onclick="toggleStock(this)" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all duration-200 bg-green-100 text-green-700 hover:bg-green-200"><i class="fas fa-check-circle mr-1"></i> In Stock</button></td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                    <td class="px-6 py-4"><div class="flex items-center gap-3"><span class="text-2xl">🍔</span><div><p class="font-bold text-gray-800 dark:text-white">Chicken Burger</p></div></div></td>
+                                    <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Campus Burger</td>
+                                    <td class="px-6 py-4 font-bold text-gray-800 dark:text-white">RM 12.00</td>
+                                    <td class="px-6 py-4 text-right"><button onclick="toggleStock(this)" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all duration-200 bg-green-100 text-green-700 hover:bg-green-200"><i class="fas fa-check-circle mr-1"></i> In Stock</button></td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                    <td class="px-6 py-4"><div class="flex items-center gap-3"><span class="text-2xl">🍉</span><div><p class="font-bold text-gray-800 dark:text-white">Watermelon Juice</p></div></div></td>
+                                    <td class="px-6 py-4 text-gray-600 dark:text-gray-300">Thirsty Station</td>
+                                    <td class="px-6 py-4 font-bold text-gray-800 dark:text-white">RM 6.00</td>
+                                    <td class="px-6 py-4 text-right"><button onclick="toggleStock(this)" class="px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all duration-200 bg-red-100 text-red-700 hover:bg-red-200"><i class="fas fa-times-circle mr-1"></i> Out of Stock</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reportView" class="hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <div><h2 class="text-2xl font-bold text-gray-800 dark:text-white">Financial Statement</h2><p class="text-gray-500 dark:text-gray-400">Overview of your stall performance</p></div>
+                    <div class="flex gap-3"><button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg"><i class="fas fa-file-csv"></i> Export CSV</button></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg"><p class="text-green-100 text-sm font-medium">Total Revenue</p><h3 class="text-3xl font-bold mt-1">RM 128.50</h3></div>
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg"><p class="text-blue-100 text-sm font-medium">Today's Sales</p><h3 class="text-3xl font-bold mt-1">RM 45.00</h3></div>
+                    <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg"><p class="text-orange-100 text-sm font-medium">Total Orders</p><h3 class="text-3xl font-bold mt-1">12</h3></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // MOCK DATA FOR ADMIN
+        let currentOrders = [
+            {
+                id: 1005,
+                user_name: "Ali",
+                created_at: new Date().toISOString(),
+                status: 'pending',
+                total_amount: 18.50,
+                remark: "No spicy",
+                items: [{quantity: 1, item_name: "Nasi Lemak", price: 10}, {quantity: 1, item_name: "Wantan Mee", price: 8.50}]
+            },
+            {
+                id: 1004,
+                user_name: "Sarah",
+                created_at: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
+                status: 'cooking',
+                total_amount: 12.00,
+                remark: "",
+                items: [{quantity: 1, item_name: "Chicken Burger", price: 12}]
+            }
+        ];
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) { html.classList.remove('dark'); localStorage.theme = 'light'; }
+            else { html.classList.add('dark'); localStorage.theme = 'dark'; }
+        }
+
+        function switchView(viewName) {
+            const views = ['ordersView', 'menuView', 'reportView'];
+            const navs = ['nav-orders', 'nav-menu', 'nav-report'];
+            views.forEach(v => document.getElementById(v).classList.add('hidden'));
+            const inactiveClass = "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700";
+            const activeClass = "bg-orange-50 dark:bg-gray-700 text-orange-600 dark:text-orange-400";
+            
+            navs.forEach(n => {
+                document.getElementById(n).className = `w-full text-left block px-4 py-3 rounded-xl font-bold transition-colors ${inactiveClass}`;
+            });
+
+            if (viewName === 'orders') { 
+                document.getElementById('ordersView').classList.remove('hidden'); 
+                document.getElementById('nav-orders').className = `w-full text-left block px-4 py-3 rounded-xl font-bold transition-colors ${activeClass}`; 
+            } else if (viewName === 'menu') { 
+                document.getElementById('menuView').classList.remove('hidden'); 
+                document.getElementById('nav-menu').className = `w-full text-left block px-4 py-3 rounded-xl font-bold transition-colors ${activeClass}`; 
+            } else { 
+                document.getElementById('reportView').classList.remove('hidden'); 
+                document.getElementById('nav-report').className = `w-full text-left block px-4 py-3 rounded-xl font-bold transition-colors ${activeClass}`; 
+            }
+        }
+
+        // Toggle stock visual only
+        function toggleStock(btn) {
+            if(btn.innerText.includes('In Stock')) {
+                btn.className = "px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all duration-200 bg-red-100 text-red-700 hover:bg-red-200";
+                btn.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Out of Stock';
+            } else {
+                btn.className = "px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all duration-200 bg-green-100 text-green-700 hover:bg-green-200";
+                btn.innerHTML = '<i class="fas fa-check-circle mr-1"></i> In Stock';
+            }
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersContainer');
+            if (currentOrders.length === 0) { container.innerHTML = `<p class="col-span-2 text-center text-gray-400">No active orders.</p>`; return; }
+            
+            const html = currentOrders.map((order, index) => {
+                const date = new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                let statusBadge, actionBtns, borderClass;
+                
+                if (order.status === 'pending') {
+                    statusBadge = '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-yellow-100 text-yellow-700">Pending</span>';
+                    actionBtns = `<button onclick="updateStatus(${index}, 'cooking')" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium shadow-sm">Start Cooking</button>`;
+                    borderClass = 'border-l-4 border-l-yellow-400';
+                } else if (order.status === 'cooking') {
+                     statusBadge = '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700">Cooking</span>';
+                     actionBtns = `<button onclick="updateStatus(${index}, 'ready')" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-medium shadow-sm">Mark Ready</button>`;
+                     borderClass = 'border-l-4 border-l-blue-500';
+                } else if (order.status === 'ready') {
+                     statusBadge = '<span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700">Ready</span>';
+                     actionBtns = `<button onclick="updateStatus(${index}, 'completed')" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium shadow-sm">Complete</button>`;
+                     borderClass = 'border-l-4 border-l-orange-500';
+                } else {
+                     return ''; // Don't show completed in live view for now
+                }
+
+                const itemsHtml = order.items.map(item => `<div class="flex justify-between text-sm py-1 border-b border-dashed border-gray-100 dark:border-gray-700 last:border-0"><span class="text-gray-600 dark:text-gray-300"><span class="font-bold text-gray-800 dark:text-white">x${item.quantity}</span> ${item.item_name}</span><span class="font-medium text-gray-500 dark:text-gray-400">RM ${(item.price * item.quantity).toFixed(2)}</span></div>`).join('');
+                let remarkHtml = order.remark ? `<div class="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 text-xs text-yellow-800 dark:text-yellow-200 border border-yellow-100 dark:border-yellow-800 rounded"><strong>Note:</strong> ${order.remark}</div>` : '';
+
+                return `<div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 ${borderClass} relative group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div><h3 class="font-bold text-gray-800 dark:text-white text-lg">Order #${order.id}</h3><p class="text-sm text-gray-500">${order.user_name}</p><p class="text-xs text-gray-400">${date}</p></div>
+                        ${statusBadge}
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 mb-4 space-y-1">${itemsHtml}${remarkHtml}</div>
+                    <div class="flex gap-2">${actionBtns}</div>
+                </div>`;
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function updateStatus(index, status) {
+            currentOrders[index].status = status;
+            renderOrders();
+        }
+
+        renderOrders();
+    </script>
+</body>
+</html>
